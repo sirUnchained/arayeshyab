@@ -1,12 +1,13 @@
 package main
 
 import (
+	"arayeshyab/src/apis"
 	"arayeshyab/src/configs"
-	"fmt"
 )
 
 func main() {
 	configs.InitConfigs()
 	cfg := configs.GetConfigs()
-	fmt.Printf("%+v\n", cfg)
+
+	apis.StartServer(cfg)
 }
