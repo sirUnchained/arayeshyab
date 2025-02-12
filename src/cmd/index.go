@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"arayeshyab/src/configs"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("hello world")
+	configs.InitConfigs()
+	cfg := configs.GetConfigs()
+	fmt.Printf("%+v\n", cfg)
 }

@@ -1,0 +1,23 @@
+{
+  "mysql": {
+    "port": "3306",
+    "host": "localhost",
+    "password": "",
+    "username": "root",
+    "database": "arayeshyab"
+  },
+  "redis": {
+    "port": "6379",
+    "host": "localhost"
+  },
+  "jwt": {
+    "accessTokenKey": "2720fb86-c3e8-4992-9e03-b2497dab398e",
+    "accessTokenExpirePerMinute": "5",
+    "refreshTokenKey": "004b3f73-0c4c-45a5-b325-9b58a51a93e9",
+    "refreshTokenExpirePerDay": "5"
+  },
+  "server": {
+    "port": "4000",
+    "host": "localhost"
+  }
+}
