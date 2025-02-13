@@ -2,6 +2,7 @@ package mysql_db
 
 import (
 	"arayeshyab/src/configs"
+	"arayeshyab/src/databases/schemas"
 	"fmt"
 
 	"gorm.io/driver/mysql"
@@ -30,4 +31,7 @@ func InitMysql(cfg *configs.Configs) {
 	if err != nil {
 		panic(err)
 	}
+
+	// migrate
+	DBClient.AutoMigrate(&schemas.User{})
 }
