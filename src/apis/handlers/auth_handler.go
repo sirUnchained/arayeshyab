@@ -21,14 +21,18 @@ func (ah *AuthHandlers) Login(ctx *gin.Context) {
 		helpers.SendResult(result, ctx)
 		return
 	}
+
+	helpers.SendResult(result, ctx)
 }
 
 func (ah *AuthHandlers) Register(ctx *gin.Context) {
 	as := services.GetAuthServices()
 
-	result := as.Login(ctx)
+	result := as.Register(ctx)
 	if !result.Ok {
 		helpers.SendResult(result, ctx)
 		return
 	}
+
+	helpers.SendResult(result, ctx)
 }
