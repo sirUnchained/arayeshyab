@@ -14,8 +14,8 @@ type Configs struct {
 }
 
 type Mysql struct {
-	Port     string
 	Host     string
+	Port     string
 	Password string
 	Username string
 	Database string
