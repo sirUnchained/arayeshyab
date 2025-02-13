@@ -1,6 +1,11 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/services"
+
+	"github.com/gin-gonic/gin"
+)
 
 type AuthHandlers struct{}
 
@@ -8,6 +13,22 @@ func GetAuthHandlers() *AuthHandlers {
 	return &AuthHandlers{}
 }
 
-func (ah *AuthHandlers) Login(ctx *gin.Context) {}
+func (ah *AuthHandlers) Login(ctx *gin.Context) {
+	as := services.GetAuthServices()
 
-func (ah *AuthHandlers) Register(ctx *gin.Context) {}
+	result := as.Login(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+}
+
+func (ah *AuthHandlers) Register(ctx *gin.Context) {
+	as := services.GetAuthServices()
+
+	result := as.Login(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+}
