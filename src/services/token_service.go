@@ -7,6 +7,7 @@ import (
 	"arayeshyab/src/databases/schemas"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -16,7 +17,7 @@ func GetTokenService() *tokenService {
 	return &tokenService{}
 }
 
-func (ts *tokenService) GenerateNewTokens(user *schemas.User) *helpers.Result {
+func (ts *tokenService) GenerateNewTokens(user *schemas.User, ctx *gin.Context) *helpers.Result {
 	// Create a variable to store the tokens we will send back
 	var replyToken dto.TokenDTO
 
@@ -39,6 +40,10 @@ func (ts *tokenService) GenerateNewTokens(user *schemas.User) *helpers.Result {
 	// Store the generated tokens in our replyToken variable
 	replyToken.RefreshToken = RefreshToken
 	replyToken.AccessToken = AccessToken
+
+	// Put tokens in client cookies
+	ctx.SetCookie("AccessToken", AccessToken, 3600*24*30, "/", "http://localhost:4000", true, true)
+	ctx.SetCookie("RefreshToken", RefreshToken, 3600*24*30, "/", "http://localhost:4000", true, true)
 
 	// Return a success result with the tokens
 	return &helpers.Result{Ok: true, Status: 201, Message: "خوش امدید", Data: replyToken} // Return a welcome message in Persian

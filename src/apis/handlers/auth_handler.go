@@ -25,13 +25,13 @@ func (ah *AuthHandlers) Login(ctx *gin.Context) {
 
 	ts := services.GetTokenService()
 
-	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User))
+	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User), ctx)
 	if !token_result.Ok {
 		helpers.SendResult(token_result, ctx)
 		return
 	}
 
-	helpers.SendResult(token_result, ctx)
+	helpers.SendResult(auth_result, ctx)
 }
 
 func (ah *AuthHandlers) Register(ctx *gin.Context) {
@@ -45,11 +45,11 @@ func (ah *AuthHandlers) Register(ctx *gin.Context) {
 
 	ts := services.GetTokenService()
 
-	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User))
+	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User), ctx)
 	if !token_result.Ok {
 		helpers.SendResult(token_result, ctx)
 		return
 	}
 
-	helpers.SendResult(token_result, ctx)
+	helpers.SendResult(auth_result, ctx)
 }
