@@ -16,7 +16,7 @@ func GetDB() *gorm.DB {
 }
 
 func InitMysql(cfg *configs.Configs) {
-	conn_str := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", cfg.Mysql.Username, cfg.Mysql.Password, cfg.Mysql.Host, cfg.Mysql.Port, cfg.Mysql.Database)
+	conn_str := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", cfg.Mysql.Username, cfg.Mysql.Password, cfg.Mysql.Host, cfg.Mysql.Port, cfg.Mysql.Database)
 
 	// connect to db
 	var err error
