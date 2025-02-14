@@ -92,8 +92,8 @@ func (ts *tokenService) GetTokenClaims(token string) (*dto.TokenDataDTO, *helper
 	}
 
 	// Check if we can get the user ID from the claims
-	if id, isConvertionOk := claims["id"].(float64); isConvertionOk {
-		claim_result.ID = uint(id) // Store the user ID in our claim_result variable
+	if ID, isConvertionOk := claims["ID"].(float64); isConvertionOk {
+		claim_result.ID = uint(ID) // Store the user ID in our claim_result variable
 	} else {
 		// If we can't get the ID, return an error result
 		return nil, &helpers.Result{Ok: false, Status: 500, Message: "شکست در استخراج اطلاعات از توکن", Data: nil} // Return an error message in Persian
