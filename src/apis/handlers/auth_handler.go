@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/databases/schemas"
 	"arayeshyab/src/services"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,15 @@ func (ah *AuthHandlers) Login(ctx *gin.Context) {
 		return
 	}
 
-	helpers.SendResult(auth_result, ctx)
+	ts := services.GetTokenService()
+
+	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User))
+	if !token_result.Ok {
+		helpers.SendResult(token_result, ctx)
+		return
+	}
+
+	helpers.SendResult(token_result, ctx)
 }
 
 func (ah *AuthHandlers) Register(ctx *gin.Context) {
@@ -34,5 +43,13 @@ func (ah *AuthHandlers) Register(ctx *gin.Context) {
 		return
 	}
 
-	helpers.SendResult(auth_result, ctx)
+	ts := services.GetTokenService()
+
+	token_result := ts.GenerateNewTokens(auth_result.Data.(*schemas.User))
+	if !token_result.Ok {
+		helpers.SendResult(token_result, ctx)
+		return
+	}
+
+	helpers.SendResult(token_result, ctx)
 }

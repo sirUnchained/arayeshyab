@@ -28,9 +28,9 @@ type Redis struct {
 
 type Jwt struct {
 	AccessTokenKey             string
-	AccessTokenExpirePerMinute string
+	AccessTokenExpirePerMinute int
 	RefreshTokenKey            string
-	RefreshTokenExpirePerDay   string
+	RefreshTokenExpirePerDay   int
 }
 
 type Server struct {
