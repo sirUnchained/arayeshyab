@@ -28,7 +28,7 @@ func Authorize() gin.HandlerFunc {
 
 		user := new(schemas.User)
 		db := mysql_db.GetDB()
-		db.Model(&schemas.User{}).Where("ID = ?", claims.ID).First(user)
+		db.Model(&schemas.User{}).Where("id = ?", claims.ID).Select("user_name", "full_name", "email", "created_at", "role", "id").First(user)
 		if user.ID == 0 {
 			helpers.SendResult(&helpers.Result{Ok: false, Status: 400, Message: "اطلاعات شما پیدا نشد لطفا وارد شوید", Data: nil}, ctx)
 			ctx.Abort()

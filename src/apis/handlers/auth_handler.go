@@ -53,3 +53,9 @@ func (ah *AuthHandlers) Register(ctx *gin.Context) {
 
 	helpers.SendResult(auth_result, ctx)
 }
+
+func (ah *AuthHandlers) GetMe(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+
+	helpers.SendResult(&helpers.Result{Ok: true, Status: 200, Message: "شما شناخته شده اید", Data: user}, ctx)
+}
