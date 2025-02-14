@@ -18,9 +18,6 @@ func GetTokenService() *tokenService {
 }
 
 func (ts *tokenService) GenerateNewTokens(user *schemas.User, ctx *gin.Context) *helpers.Result {
-	// Create a variable to store the tokens we will send back
-	var replyToken dto.TokenDTO
-
 	// Generate a new access token for the user
 	AccessToken, err := generateAccessToken(user)
 	// If there is an error while generating the access token, print the error and return a failure result
@@ -37,16 +34,12 @@ func (ts *tokenService) GenerateNewTokens(user *schemas.User, ctx *gin.Context) 
 		return &helpers.Result{Ok: false, Status: 500, Message: "خطا در ساخت توکن تازه سازی", Data: nil} // Return an error message in Persian
 	}
 
-	// Store the generated tokens in our replyToken variable
-	replyToken.RefreshToken = RefreshToken
-	replyToken.AccessToken = AccessToken
-
 	// Put tokens in client cookies
 	ctx.SetCookie("AccessToken", AccessToken, 3600*24*30, "/", "http://localhost:4000", true, true)
 	ctx.SetCookie("RefreshToken", RefreshToken, 3600*24*30, "/", "http://localhost:4000", true, true)
 
 	// Return a success result with the tokens
-	return &helpers.Result{Ok: true, Status: 201, Message: "خوش امدید", Data: replyToken} // Return a welcome message in Persian
+	return &helpers.Result{Ok: true, Status: 201, Message: "خوش امدید", Data: nil} // Return a welcome message in Persian
 }
 
 func (ts *tokenService) VerifyToken(recived_token string) (*jwt.Token, error) {
