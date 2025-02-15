@@ -83,5 +83,31 @@ func (us *userService) Update(ctx *gin.Context) *helpers.Result {
 }
 
 func (us *userService) Ban(ctx *gin.Context) *helpers.Result {
-	// todo
+	userID_str := ctx.Param("id")
+	userID, err := strconv.Atoi(userID_str)
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "شناسه کاربری یافت نشد", Data: nil}
+	}
+
+	user, _ := ctx.Get("user")
+	if user.(schemas.User).Role == "admin" {
+		return &helpers.Result{Ok: false, Status: 400, Message: "نمیتوانم ادمین هارا اخراج بکنم", Data: nil}
+	} else if user.(schemas.User).ID == uint(userID) {
+		return &helpers.Result{Ok: false, Status: 400, Message: "نمیتوانم تورا اخراج بکنم", Data: nil}
+	}
+
+	banUser := new(schemas.User)
+	db := mysql_db.GetDB()
+	db.Model(&schemas.User{}).Where("id = ?", user.(schemas.User).ID).First(banUser)
+	if banUser.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "شناسه کاربری یافت نشد", Data: nil}
+	}
+
+	err = db.Model(&schemas.User{}).Delete(banUser).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "خطایی از سمت ما رخ داد و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "کاربر اخراج شد", Data: nil}
+
 }
