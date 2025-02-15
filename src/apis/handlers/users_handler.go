@@ -1,6 +1,11 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/services"
+
+	"github.com/gin-gonic/gin"
+)
 
 type userHandler struct{}
 
@@ -8,14 +13,38 @@ func GetUserHandler() *userHandler {
 	return &userHandler{}
 }
 
-func (us *userHandler) GetAll(ctx *gin.Context) {
-	// todo
+func (uh *userHandler) GetAll(ctx *gin.Context) {
+	us := services.GetUserService()
+
+	result := us.GetAll(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+
+	helpers.SendResult(result, ctx)
 }
 
-func (us *userHandler) Update(ctx *gin.Context) {
-	// todo
+func (uh *userHandler) Update(ctx *gin.Context) {
+	us := services.GetUserService()
+
+	result := us.Update(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+
+	helpers.SendResult(result, ctx)
 }
 
-func (us *userHandler) Ban(ctx *gin.Context) {
-	// todo
+func (uh *userHandler) Ban(ctx *gin.Context) {
+	us := services.GetUserService()
+
+	result := us.Ban(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+
+	helpers.SendResult(result, ctx)
 }
