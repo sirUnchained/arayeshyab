@@ -8,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthHandlers struct{}
+type authHandlers struct{}
 
-func GetAuthHandlers() *AuthHandlers {
-	return &AuthHandlers{}
+func GetAuthHandlers() *authHandlers {
+	return &authHandlers{}
 }
 
-func (ah *AuthHandlers) Login(ctx *gin.Context) {
+func (ah *authHandlers) Login(ctx *gin.Context) {
 	as := services.GetAuthServices()
 
 	auth_result := as.Login(ctx)
@@ -34,7 +34,7 @@ func (ah *AuthHandlers) Login(ctx *gin.Context) {
 	helpers.SendResult(auth_result, ctx)
 }
 
-func (ah *AuthHandlers) Register(ctx *gin.Context) {
+func (ah *authHandlers) Register(ctx *gin.Context) {
 	as := services.GetAuthServices()
 
 	auth_result := as.Register(ctx)
@@ -54,7 +54,7 @@ func (ah *AuthHandlers) Register(ctx *gin.Context) {
 	helpers.SendResult(auth_result, ctx)
 }
 
-func (ah *AuthHandlers) GetMe(ctx *gin.Context) {
+func (ah *authHandlers) GetMe(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 
 	helpers.SendResult(&helpers.Result{Ok: true, Status: 200, Message: "شما شناخته شده اید", Data: user}, ctx)

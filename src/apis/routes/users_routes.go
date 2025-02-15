@@ -1,9 +1,16 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"arayeshyab/src/apis/handlers"
+	"arayeshyab/src/apis/middleware"
+
+	"github.com/gin-gonic/gin"
+)
 
 func UsersRoutes(r *gin.RouterGroup) {
-	r.GET("/users")
-	r.PUT("/user")
-	r.DELETE("/user/:id")
+	uh := handlers.GetUserHandler()
+
+	r.GET("/users", middleware.Authorize(), uh.GetAll)
+	r.PUT("/user", middleware.Authorize(), uh.Update)
+	r.DELETE("/user/:id", middleware.Authorize(), uh.Ban)
 }
