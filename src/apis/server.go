@@ -19,4 +19,5 @@ func StartServer(cfg *configs.Configs) {
 
 func initRoutes(r *gin.RouterGroup) {
 	routes.AuthRoutes(r)
+	routes.UsersRoutes(r)
 }
