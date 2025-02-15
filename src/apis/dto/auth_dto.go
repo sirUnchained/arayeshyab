@@ -3,11 +3,11 @@ package dto
 import "github.com/go-playground/validator/v10"
 
 type AuthDTO struct {
-	Email    string `json:"email" binding:"required,email,lowercase"`
+	Email    string `json:"email" binding:"required,email,lowercase, max=255"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-// if we have validation failed for login/register, we'll generate slug and send it to client
+// if we have validation failed for login/register, we'll generate slice and send it to client
 func AuthDTO_GenerateFailedMap(err error) []string {
 	if err.Error() == "EOF" {
 		return nil
@@ -24,6 +24,8 @@ func AuthDTO_GenerateFailedMap(err error) []string {
 				errMsg = append(errMsg, "ایمیل معتبر نیست")
 			} else if err.Tag() == "lowercase" {
 				errMsg = append(errMsg, "ایمیل باید با حروف انگلسی کوچک باشد")
+			} else if err.Tag() == "max" {
+				errMsg = append(errMsg, "حداکثر طول ایمیل باید ۲۵۵ حرف باشد")
 			}
 		case "Password":
 			if err.Tag() == "required" {
