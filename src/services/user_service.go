@@ -7,6 +7,7 @@ import (
 	"arayeshyab/src/databases/schemas"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -35,9 +36,9 @@ func (us *userService) GetAll(ctx *gin.Context) *helpers.Result {
 	var users []schemas.User
 	db := mysql_db.GetDB()
 	db.Model(&schemas.User{}).
-		Where("deleted_at = null").
-		Take(limit).
+		Select("full_name", "id", "role", "address", "email", "user_name", "created_at").
 		Offset((page - 1) * limit).
+		Limit(limit).
 		Find(&users)
 
 	return &helpers.Result{Ok: true, Status: 200, Message: "بفرمایید", Data: users}
@@ -51,35 +52,43 @@ func (us *userService) Update(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا با دقت اطلاعات را وارد کنید", Data: errs}
 	}
 
+	// getting current validated user and database
 	user, _ := ctx.Get("user")
-	updateUser := new(schemas.User)
 	db := mysql_db.GetDB()
 
-	db.Model(&schemas.User{}).Where("id = ?", user.(schemas.User).ID).First(updateUser)
-	if updateUser.ID == 0 {
-		fmt.Printf("%+v\n", user)
-		return &helpers.Result{Ok: false, Status: 404, Message: "کاربری با مشخصات شما یافت نشد", Data: nil}
+	// check if username or email get duplicated, then send error
+	isUserNameDuplicated := new(schemas.User)
+	db.Model(&schemas.User{}).
+		Where("id != ?", user.(*schemas.User).ID).
+		Where(
+			"user_name = ? OR email = ?",
+			strings.TrimSpace(userData.UserName),
+			strings.TrimSpace(userData.Email)).
+		First(isUserNameDuplicated)
+	if isUserNameDuplicated.ID != 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا ایمیل یا نام کاربری دیگری وارد کنید", Data: nil}
 	}
 
-	updateUser.FullName = userData.FullName
-	updateUser.UserName = userData.UserName
-	updateUser.Email = userData.Email
-	updateUser.Address = userData.Address
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updateUser.Password), 15)
+	//  updating proccess
+	user.(*schemas.User).FullName = userData.FullName
+	user.(*schemas.User).UserName = userData.UserName
+	user.(*schemas.User).Email = userData.Email
+	user.(*schemas.User).Address = userData.Address
+	// hash password then update
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.(*schemas.User).Password), 5)
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "خطایی از سمت ما پیش امده و به زودی رفع خواهد شد", Data: nil}
 	}
-	updateUser.Password = string(hashedPassword)
-
-	err = db.Save(&updateUser).Error
+	user.(*schemas.User).Password = string(hashedPassword)
+	// update if we have no error
+	err = db.Save(user).Error
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "خطایی از سمت ما پیش امده و به زودی رفع خواهد شد", Data: nil}
 	}
 
-	return &helpers.Result{Ok: true, Status: 200, Message: "بروزرسانی اطلاعات با موفقیت انجام شد", Data: updateUser}
+	return &helpers.Result{Ok: true, Status: 200, Message: "بروزرسانی اطلاعات با موفقیت انجام شد", Data: user}
 }
 
 func (us *userService) Ban(ctx *gin.Context) *helpers.Result {
@@ -89,18 +98,16 @@ func (us *userService) Ban(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 404, Message: "شناسه کاربری یافت نشد", Data: nil}
 	}
 
-	user, _ := ctx.Get("user")
-	if user.(schemas.User).Role == "admin" {
-		return &helpers.Result{Ok: false, Status: 400, Message: "نمیتوانم ادمین هارا اخراج بکنم", Data: nil}
-	} else if user.(schemas.User).ID == uint(userID) {
-		return &helpers.Result{Ok: false, Status: 400, Message: "نمیتوانم تورا اخراج بکنم", Data: nil}
-	}
-
 	banUser := new(schemas.User)
 	db := mysql_db.GetDB()
-	db.Model(&schemas.User{}).Where("id = ?", user.(schemas.User).ID).First(banUser)
+	db.Model(&schemas.User{}).Where("id = ?", userID).First(banUser)
 	if banUser.ID == 0 {
 		return &helpers.Result{Ok: false, Status: 404, Message: "شناسه کاربری یافت نشد", Data: nil}
+	}
+
+	// we cannot ban admins, and we dont let admins ban themselvse
+	if banUser.Role == "admin" {
+		return &helpers.Result{Ok: false, Status: 400, Message: "نمیتوانم ادمین هارا اخراج بکنم", Data: nil}
 	}
 
 	err = db.Model(&schemas.User{}).Delete(banUser).Error

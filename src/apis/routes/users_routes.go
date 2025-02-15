@@ -10,7 +10,7 @@ import (
 func UsersRoutes(r *gin.RouterGroup) {
 	uh := handlers.GetUserHandler()
 
-	r.GET("/users", middleware.Authorize(), uh.GetAll)
+	r.GET("/user", middleware.Authorize(), uh.GetAll)
 	r.PUT("/user", middleware.Authorize(), uh.Update)
 	r.DELETE("/user/:id", middleware.Authorize(), uh.Ban)
 }

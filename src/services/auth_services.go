@@ -54,7 +54,7 @@ func (ah *authServices) Register(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 404, Message: "لطفا ایمیل دیگری وارد کنید", Data: nil}
 	}
 	// hashing password
-	hashedPass, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 15)
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 5)
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "خطایی از سمت ما پیش امده و به زودی رفع خواهد شد", Data: nil}

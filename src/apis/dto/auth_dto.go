@@ -3,7 +3,7 @@ package dto
 import "github.com/go-playground/validator/v10"
 
 type AuthDTO struct {
-	Email    string `json:"email" binding:"required,email,lowercase, max=255"`
+	Email    string `json:"email" binding:"required,max=255,email,lowercase"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
