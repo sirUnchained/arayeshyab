@@ -31,7 +31,7 @@ func UpdateUserDTO_validation(err error) []string {
 			} else if err.Tag() == "max" {
 				errMsg = append(errMsg, "حداکثر طول نام کاربری باید ۲۵۵ حرف باشد")
 			} else if err.Tag() == "lowercase" || err.Tag() == "alpha" {
-				errMsg = append(errMsg, "نام کاربری باید با حروف کوچک انگلیسی باشد")
+				errMsg = append(errMsg, "نام کاربری باید فقط با حروف کوچک انگلیسی باشد")
 			}
 		case "Email":
 			if err.Tag() == "required" {
