@@ -28,43 +28,45 @@ func (ch *categoryService) GetAll() *helpers.Result {
 }
 
 func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
-	if err := ctx.Request.ParseMultipartForm(10 << 20); err != nil {
-		return &helpers.Result{Ok: false, Status: 400, Message: "اندازه اطلاعات وارد شده معتبر نمی باشد", Data: nil}
-	}
-
+	// get and validate title
 	title := ctx.PostForm("title")
 	if title == "" || len(title) > 50 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی الزلمی است و باید حداکثر ۵۰ حرف باشد", Data: nil}
 	}
-
+	// create slug from title and check it is unique in db
+	slug := strings.Replace(title, " ", "-", -1)
+	checkCategory := new(schemas.Category)
+	db := mysql_db.GetDB()
+	db.Model(&schemas.Category{}).Where("slug = ?", slug).First(checkCategory)
+	if checkCategory.ID != 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی از قبل موجود است", Data: nil}
+	}
+	// get cover make sure it exist
 	cover, err := ctx.FormFile("cover")
 	if err != nil {
 		return &helpers.Result{Ok: false, Status: 400, Message: "تصویر دسته بندی الزامی است", Data: nil}
 	}
-
+	// make sure cover foramt is jpg
 	if !strings.Contains(cover.Filename, "jpg") {
 		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت فایل فقطط باید jpg باشد", Data: nil}
 	}
-
+	// make sure cover size is 2mb
 	if cover.Size > (2 << 20) {
 		return &helpers.Result{Ok: false, Status: 400, Message: "اندازه تصویر وارد شده بیش از ۲ مگابایت است", Data: nil}
 	}
-
+	// create unique name for file
 	fileName := fmt.Sprintf("%s-%d-%s", time.Now().Format("202503032460"), rand.Intn(10e10), cover.Filename)
 	cover.Filename = fileName
-
+	// save file
 	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/%s", fileName))
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
 	}
-
-	slug := strings.Replace(title, " ", "-", -1)
-
+	// save datas to db
 	newCategory := &schemas.Category{Title: title, Pic: fileName, Slug: slug}
-	db := mysql_db.GetDB()
 	db.Model(&schemas.Category{}).Create(newCategory)
-
+	// done
 	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی ایجاد شد", Data: newCategory}
 }
 
