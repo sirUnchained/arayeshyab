@@ -12,6 +12,8 @@ func StartServer(cfg *configs.Configs) {
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery())
 
+	server.Static("/public", "/")
+
 	initRoutes(&server.RouterGroup)
 
 	server.Run(fmt.Sprintf(":%s", cfg.Server.Port))

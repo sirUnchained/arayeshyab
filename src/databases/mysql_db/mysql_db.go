@@ -33,5 +33,5 @@ func InitMysql(cfg *configs.Configs) {
 	}
 
 	// migrate
-	DBClient.AutoMigrate(&schemas.User{})
+	DBClient.AutoMigrate(&schemas.User{}, &schemas.Category{})
 }
