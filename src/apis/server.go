@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"arayeshyab/src/apis/middleware"
 	"arayeshyab/src/apis/routes"
 	"arayeshyab/src/configs"
 	"fmt"
@@ -10,9 +11,9 @@ import (
 
 func StartServer(cfg *configs.Configs) {
 	server := gin.New()
-	server.Use(gin.Logger(), gin.Recovery())
+	server.Use(gin.Logger(), gin.Recovery(), middleware.AddHeadersSecurity(cfg))
 
-	server.Static("/public", "/")
+	server.Static("/public", "./public")
 
 	initRoutes(&server.RouterGroup)
 
