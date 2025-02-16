@@ -34,7 +34,7 @@ func (ah *authServices) Login(ctx *gin.Context) *helpers.Result {
 	// compare founded user's password
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userData.Password))
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err, user.Password, userData.Password)
 		return &helpers.Result{Ok: false, Status: 400, Message: "اطلاعات کاربری درست وارد نشده اند", Data: nil}
 	}
 

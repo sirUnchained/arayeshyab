@@ -6,6 +6,7 @@ import (
 	"arayeshyab/src/databases/schemas"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -70,4 +71,25 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی ایجاد شد", Data: newCategory}
 }
 
-func (ch *categoryService) Remove(ctx *gin.Context)/* *helpers.Result */ {}
+func (ch *categoryService) Remove(ctx *gin.Context) *helpers.Result {
+	id_str := ctx.Param("id")
+
+	var id int
+	var err error
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.Result{Ok: false, Status: 400, Message: "شناسه دسته بندی معتبر نیست", Data: nil}
+	}
+
+	db := mysql_db.GetDB()
+	err = db.Delete(&schemas.Category{}, id).Error
+	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی یافت نشد", Data: nil}
+		}
+
+		fmt.Println(err)
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "دسته بندی حذف شد", Data: nil}
+}
