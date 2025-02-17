@@ -36,27 +36,43 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	if title == "" || len(title) > 50 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی الزلمی است و باید حداکثر ۵۰ حرف باشد", Data: nil}
 	}
-	// create slug from title and check it is unique in db
+	// create slug from title
 	slug := strings.Replace(title, " ", "-", -1)
+	// check slug is duplicated between categories
 	check_category := new(schemas.Category)
+	check_sub_category := new(schemas.SubCategory)
 	db := mysql_db.GetDB()
+
 	db.Model(&schemas.Category{}).Where("slug = ?", slug).First(check_category)
-	if check_category.ID != 0 {
+	db.Model(&schemas.SubCategory{}).Where("slug = ?", slug).First(check_sub_category)
+
+	if check_sub_category.ID != 0 || check_category.ID != 0 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی از قبل موجود است", Data: nil}
 	}
 	new_category.Title = title
 	new_category.Slug = slug
 
-	// check parrent category exist, if dose then it is a parent category
+	// ok this one is a bit hard, i check if client send an id i go check it in db, if it exist then i add it as parrent if dont i'll send error
 	parrent_ID_str := ctx.PostForm("parrent")
-	if parrent_ID_str != "" {
+	parrent_ID, err := strconv.Atoi(parrent_ID_str)
+	if err == nil {
 		parent_category := new(schemas.Category)
-		db.Model(&schemas.Category{}).Where("id = ?", parrent_ID_str).First(parent_category)
-		if parent_category.ID != 0 {
+		db.Model(&schemas.Category{}).Where("id = ?", parrent_ID).First(parent_category)
+		if parent_category.ID == 0 {
 			return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی پدر یافت نشد", Data: nil}
 		}
 
-		new_sub_category := new(schemas.SubCategory)
+		new_sub_category := new(schemas.Category)
+		new_sub_category.ParentID = &parrent_ID
+		new_sub_category.Slug = slug
+		new_sub_category.Title = title
+		err = db.Model(&schemas.Category{}).Save(new_sub_category).Error
+		if err != nil {
+			fmt.Println(err)
+			return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+		}
+
+		return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی فرزند ایجاد شد", Data: new_category}
 	}
 
 	// get cover make sure it exist
@@ -76,15 +92,20 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	fileName := fmt.Sprintf("%s-%d-%s", time.Now().Format("202503032460"), rand.Intn(10e10), cover.Filename)
 	cover.Filename = fileName
 	new_category.Pic = fileName
+
 	// save file
 	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/categories/%s", fileName))
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
 	}
+
 	// save datas to db
-	db.Model(&schemas.Category{}).Create(new_category)
-	// done
+	err = db.Model(&schemas.Category{}).Create(new_category).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
 	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی پدر ایجاد شد", Data: new_category}
 }
 
