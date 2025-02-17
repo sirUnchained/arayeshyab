@@ -20,10 +20,21 @@ func GetCategoryService() *categoryService {
 }
 
 func (ch *categoryService) GetAll() *helpers.Result {
-	categories := new([]schemas.Category)
+	var categories []schemas.Category
 
+	// get all categories
 	db := mysql_db.GetDB()
-	db.Model(&schemas.Category{}).Find(categories)
+	db.Model(&schemas.Category{}).Preload("Children").Find(&categories)
+
+	// put sub categories inside parent categories, then remove them
+	for i := 0; i < len(categories); i++ {
+		for j := 0; j < len(categories); j++ {
+			if categories[j].ParentID == categories[i].ID {
+				categories[i].Children = append(categories[i].Children, categories[j])
+				categories = append(categories[:j], categories[j+1:]...)
+			}
+		}
+	}
 
 	return &helpers.Result{Ok: false, Status: 200, Message: "بفرمایید", Data: categories}
 }
@@ -52,18 +63,18 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	new_category.Title = title
 	new_category.Slug = slug
 
-	// ok this one is a bit hard, i check if client send an id i go check it in db, if it exist then i add it as parrent if dont i'll send error
-	parrent_ID_str := ctx.PostForm("parrent")
-	parrent_ID, err := strconv.Atoi(parrent_ID_str)
+	// ok this one is a bit hard, i check if client send an id i go check it in db, if it exist then i add it as parent if dont i'll send error
+	parent_ID_str := ctx.PostForm("parent")
+	parent_ID, err := strconv.Atoi(parent_ID_str)
 	if err == nil {
 		parent_category := new(schemas.Category)
-		db.Model(&schemas.Category{}).Where("id = ?", parrent_ID).First(parent_category)
+		db.Model(&schemas.Category{}).Where("id = ?", parent_ID).First(parent_category)
 		if parent_category.ID == 0 {
 			return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی پدر یافت نشد", Data: nil}
 		}
 
 		new_sub_category := new(schemas.Category)
-		new_sub_category.ParentID = &parrent_ID
+		new_sub_category.ParentID = uint(parent_ID)
 		new_sub_category.Slug = slug
 		new_sub_category.Title = title
 		err = db.Model(&schemas.Category{}).Save(new_sub_category).Error
