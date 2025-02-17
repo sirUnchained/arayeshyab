@@ -37,6 +37,18 @@ func (ch *categoryHandler) CreateCategory(ctx *gin.Context) {
 	helpers.SendResult(result, ctx)
 }
 
+func (ch *categoryHandler) CreateSubCategory(ctx *gin.Context) {
+	cs := services.GetCategoryService()
+
+	result := cs.CreateSubCategory(ctx)
+	if !result.Ok {
+		helpers.SendResult(result, ctx)
+		return
+	}
+
+	helpers.SendResult(result, ctx)
+}
+
 func (ch *categoryHandler) Remove(ctx *gin.Context) {
 	cs := services.GetCategoryService()
 

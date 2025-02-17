@@ -146,7 +146,7 @@ func (ch *categoryService) CreateSubCategory(ctx *gin.Context) *helpers.Result {
 
 	// check do parent exist
 	db.Model(&schemas.Category{}).Where("id = ?", subCat.Parent).First(check_category)
-	if check_category.ID == 0 {
+	if check_category.ID == 0 || check_category.ParentID == nil {
 		return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی والد یافت نشد", Data: nil}
 	}
 
