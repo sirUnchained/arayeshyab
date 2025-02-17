@@ -30,22 +30,30 @@ func (ch *categoryService) GetAll() *helpers.Result {
 	db.Model(&schemas.SubCategory{}).Find(&sub_categories)
 
 	// put sub sub categories inside sub categories
-	// for i := 0; i < len(categories); i++ {
-	// 	for j := 0; j < len(sub_categories); j++ {
-	// 		if categories[i].ID == sub_categories[j].SubparentID {
-	// 			categories[i].SubSubCategory = append(categories[i].SubSubCategory, sub_categories[j])
-	// 			categories = append(categories[:j], categories[j+1:]...)
-	// 		}
-	// 	}
-	// }
+	for i := 0; i < len(categories); i++ {
+		for j := 0; j < len(sub_categories); j++ {
+			if categories[i].ID == sub_categories[j].SubparentID {
+				categories[i].SubSubCategory = append(categories[i].SubSubCategory, sub_categories[j])
+				// categories = append(categories[:j], categories[j+1:]...)
+			}
+		}
+	}
 
-	// put sub categories inside parent categories, then remove them
+	// put sub categories inside parent categories
 	for i := 0; i < len(categories); i++ {
 		for j := 0; j < len(categories); j++ {
 			if categories[j].ParentID != nil && categories[i].ID == *categories[j].ParentID {
 				categories[i].SubCategory = append(categories[i].SubCategory, categories[j])
-				categories = append(categories[:j], categories[j+1:]...)
 			}
+		}
+	}
+
+	// remove all those categories which have parent
+	for i := 0; i < len(categories); i++ {
+		if categories[i].ParentID != nil {
+			categories = append(categories[:i], categories[i+1:]...)
+
+			// categories = slices.Delete(categories, j, j+1)
 		}
 	}
 
