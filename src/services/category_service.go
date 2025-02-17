@@ -29,6 +29,8 @@ func (ch *categoryService) GetAll() *helpers.Result {
 }
 
 func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
+	new_category := new(schemas.Category)
+
 	// get and validate title
 	title := ctx.PostForm("title")
 	if title == "" || len(title) > 50 {
@@ -36,12 +38,34 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	}
 	// create slug from title and check it is unique in db
 	slug := strings.Replace(title, " ", "-", -1)
-	checkCategory := new(schemas.Category)
+	check_category := new(schemas.Category)
 	db := mysql_db.GetDB()
-	db.Model(&schemas.Category{}).Where("slug = ?", slug).First(checkCategory)
-	if checkCategory.ID != 0 {
+	db.Model(&schemas.Category{}).Where("slug = ?", slug).First(check_category)
+	if check_category.ID != 0 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی از قبل موجود است", Data: nil}
 	}
+	new_category.Title = title
+	new_category.Slug = slug
+
+
+
+	// check parrent category exist, if dose then it is a sub category
+	parrent_ID_str := ctx.PostForm("parrent")
+
+	if parrent_ID_str != "" {
+		parent_category := new(schemas.Category)
+		db.Model(&schemas.Category{}).Where("id = ?", parrent_ID_str).First(parent_category)
+		if parent_category.ID != 0 {
+			sub_category := new(schemas.SubCategory)
+			sub_category.
+		}
+	}
+	if parent_category.ID == 0 {
+		new_category.ParrentID = &parent_category.ID
+	}
+
+
+
 	// get cover make sure it exist
 	cover, err := ctx.FormFile("cover")
 	if err != nil {
@@ -58,17 +82,17 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	// create unique name for file
 	fileName := fmt.Sprintf("%s-%d-%s", time.Now().Format("202503032460"), rand.Intn(10e10), cover.Filename)
 	cover.Filename = fileName
+	new_category.Pic = fileName
 	// save file
-	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/%s", fileName))
+	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/categories/%s", fileName))
 	if err != nil {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
 	}
 	// save datas to db
-	newCategory := &schemas.Category{Title: title, Pic: fileName, Slug: slug}
-	db.Model(&schemas.Category{}).Create(newCategory)
+	db.Model(&schemas.Category{}).Create(new_category)
 	// done
-	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی ایجاد شد", Data: newCategory}
+	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی پدر ایجاد شد", Data: new_category}
 }
 
 func (ch *categoryService) Remove(ctx *gin.Context) *helpers.Result {
