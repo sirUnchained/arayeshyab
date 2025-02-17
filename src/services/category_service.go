@@ -29,7 +29,7 @@ func (ch *categoryService) GetAll() *helpers.Result {
 	// put sub categories inside parent categories, then remove them
 	for i := 0; i < len(categories); i++ {
 		for j := 0; j < len(categories); j++ {
-			if categories[j].ParentID == categories[i].ID {
+			if categories[j].ParentID == &categories[i].ID {
 				categories[i].Children = append(categories[i].Children, categories[j])
 				categories = append(categories[:j], categories[j+1:]...)
 			}
@@ -73,8 +73,9 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 			return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی پدر یافت نشد", Data: nil}
 		}
 
+		formated_id := uint(parent_ID)
 		new_sub_category := new(schemas.Category)
-		new_sub_category.ParentID = uint(parent_ID)
+		new_sub_category.ParentID = &formated_id
 		new_sub_category.Slug = slug
 		new_sub_category.Title = title
 		err = db.Model(&schemas.Category{}).Save(new_sub_category).Error

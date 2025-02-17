@@ -7,7 +7,7 @@ type Category struct {
 	Title     string     `gorm:"type:varchar(50)"`
 	Slug      string     `gorm:"type:varchar(50);unique"`
 	Pic       string     `gorm:"type:varchar(255)"`
-	ParentID  uint       `gorm:"column:parent_id"`
+	ParentID  *uint      `gorm:"column:parent_id"`
 	Parent    *Category  `gorm:"foreignKey:ParentID"`
 	Children  []Category `gorm:"foreignKey:ParentID"`
 	CreatedAt time.Time
