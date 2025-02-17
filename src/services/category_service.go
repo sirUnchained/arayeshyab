@@ -47,24 +47,17 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	new_category.Title = title
 	new_category.Slug = slug
 
-
-
-	// check parrent category exist, if dose then it is a sub category
+	// check parrent category exist, if dose then it is a parent category
 	parrent_ID_str := ctx.PostForm("parrent")
-
 	if parrent_ID_str != "" {
 		parent_category := new(schemas.Category)
 		db.Model(&schemas.Category{}).Where("id = ?", parrent_ID_str).First(parent_category)
 		if parent_category.ID != 0 {
-			sub_category := new(schemas.SubCategory)
-			sub_category.
+			return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی پدر یافت نشد", Data: nil}
 		}
-	}
-	if parent_category.ID == 0 {
-		new_category.ParrentID = &parent_category.ID
-	}
 
-
+		new_sub_category := new(schemas.SubCategory)
+	}
 
 	// get cover make sure it exist
 	cover, err := ctx.FormFile("cover")
