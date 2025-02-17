@@ -25,10 +25,10 @@ func (ch *categoryHandler) GetAll(ctx *gin.Context) {
 	helpers.SendResult(result, ctx)
 }
 
-func (ch *categoryHandler) Create(ctx *gin.Context) {
+func (ch *categoryHandler) CreateCategory(ctx *gin.Context) {
 	cs := services.GetCategoryService()
 
-	result := cs.Create(ctx)
+	result := cs.CreateCategory(ctx)
 	if !result.Ok {
 		helpers.SendResult(result, ctx)
 		return

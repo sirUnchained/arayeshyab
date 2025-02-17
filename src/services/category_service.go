@@ -1,6 +1,7 @@
 package services
 
 import (
+	"arayeshyab/src/apis/dto"
 	"arayeshyab/src/apis/helpers"
 	"arayeshyab/src/databases/mysql_db"
 	"arayeshyab/src/databases/schemas"
@@ -39,7 +40,7 @@ func (ch *categoryService) GetAll() *helpers.Result {
 	return &helpers.Result{Ok: false, Status: 200, Message: "بفرمایید", Data: categories}
 }
 
-func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
+func (ch *categoryService) CreateCategory(ctx *gin.Context) *helpers.Result {
 	new_category := new(schemas.Category)
 
 	// get and validate title
@@ -47,8 +48,9 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	if title == "" || len(title) > 50 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی الزلمی است و باید حداکثر ۵۰ حرف باشد", Data: nil}
 	}
-	// create slug from title
+
 	slug := strings.Replace(title, " ", "-", -1)
+
 	// check slug is duplicated between categories
 	check_category := new(schemas.Category)
 	check_sub_category := new(schemas.SubCategory)
@@ -119,6 +121,22 @@ func (ch *categoryService) Create(ctx *gin.Context) *helpers.Result {
 	}
 
 	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی پدر ایجاد شد", Data: new_category}
+}
+
+func (ch *categoryService) CreateSubCategory(ctx *gin.Context) *helpers.Result {
+	subCat := new(dto.CreateSubCategoryDTO)
+	if err := ctx.ShouldBindBodyWithJSON(subCat); err != nil {
+		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا ورودی هارا بررسی کرده و مجدد وارد کنید", Data: []string{"عنوان الزامی بوده باید بیش از ۸ حرف و کمتر از ۵۰ حرف باشد"}}
+	}
+
+	slug := strings.Replace(subCat.Title, " ", "-", -1)
+
+	var new_sub_category schemas.SubCategory
+	new_sub_category.Slug = slug
+	new_sub_category.Title = subCat.Title
+
+	db := mysql_db.GetDB()
+	err := db.Create().Error
 }
 
 func (ch *categoryService) Remove(ctx *gin.Context) *helpers.Result {
