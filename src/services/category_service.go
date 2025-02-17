@@ -22,16 +22,28 @@ func GetCategoryService() *categoryService {
 
 func (ch *categoryService) GetAll() *helpers.Result {
 	var categories []schemas.Category
+	var sub_categories []schemas.SubCategory
 
 	// get all categories
 	db := mysql_db.GetDB()
-	db.Model(&schemas.Category{}).Preload("Children").Find(&categories)
+	db.Model(&schemas.Category{}).Find(&categories)
+	db.Model(&schemas.SubCategory{}).Find(&sub_categories)
+
+	// put sub sub categories inside sub categories
+	// for i := 0; i < len(categories); i++ {
+	// 	for j := 0; j < len(sub_categories); j++ {
+	// 		if categories[i].ID == sub_categories[j].SubparentID {
+	// 			categories[i].SubSubCategory = append(categories[i].SubSubCategory, sub_categories[j])
+	// 			categories = append(categories[:j], categories[j+1:]...)
+	// 		}
+	// 	}
+	// }
 
 	// put sub categories inside parent categories, then remove them
 	for i := 0; i < len(categories); i++ {
 		for j := 0; j < len(categories); j++ {
-			if categories[j].ParentID == &categories[i].ID {
-				categories[i].Children = append(categories[i].Children, categories[j])
+			if categories[j].ParentID != nil && categories[i].ID == *categories[j].ParentID {
+				categories[i].SubCategory = append(categories[i].SubCategory, categories[j])
 				categories = append(categories[:j], categories[j+1:]...)
 			}
 		}
