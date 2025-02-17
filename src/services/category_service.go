@@ -126,17 +126,41 @@ func (ch *categoryService) CreateCategory(ctx *gin.Context) *helpers.Result {
 func (ch *categoryService) CreateSubCategory(ctx *gin.Context) *helpers.Result {
 	subCat := new(dto.CreateSubCategoryDTO)
 	if err := ctx.ShouldBindBodyWithJSON(subCat); err != nil {
-		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا ورودی هارا بررسی کرده و مجدد وارد کنید", Data: []string{"عنوان الزامی بوده باید بیش از ۸ حرف و کمتر از ۵۰ حرف باشد"}}
+		errs := dto.CreateSubCategoryDTO_validate(err)
+		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا ورودی هارا بررسی کرده و مجدد وارد کنید", Data: errs}
 	}
 
 	slug := strings.Replace(subCat.Title, " ", "-", -1)
 
+	// checking slugs duplicated or not
+	check_category := new(schemas.Category)
+	check_sub_category := new(schemas.SubCategory)
+	db := mysql_db.GetDB()
+
+	db.Model(&schemas.Category{}).Where("slug = ?", slug).First(check_category)
+	db.Model(&schemas.SubCategory{}).Where("slug = ?", slug).First(check_sub_category)
+
+	if check_sub_category.ID != 0 || check_category.ID != 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی از قبل موجود است", Data: nil}
+	}
+
+	// check do parent exist
+	db.Model(&schemas.Category{}).Where("id = ?", subCat.Parent).First(check_category)
+	if check_category.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "دسته بندی والد یافت نشد", Data: nil}
+	}
+
 	var new_sub_category schemas.SubCategory
 	new_sub_category.Slug = slug
 	new_sub_category.Title = subCat.Title
+	new_sub_category.SubparentID = check_category.ID
 
-	db := mysql_db.GetDB()
-	err := db.Create().Error
+	err := db.Create(&new_sub_category).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 201, Message: "دسته بندی فرزند ایجاد شد", Data: new_sub_category}
 }
 
 func (ch *categoryService) Remove(ctx *gin.Context) *helpers.Result {
