@@ -24,4 +24,5 @@ func initRoutes(r *gin.RouterGroup) {
 	routes.AuthRoutes(r)
 	routes.UsersRoutes(r)
 	routes.CategoryRoutes(r)
+	routes.ProductRoutes(r)
 }
