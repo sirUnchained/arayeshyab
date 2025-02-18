@@ -1,6 +1,11 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/services"
+
+	"github.com/gin-gonic/gin"
+)
 
 type productHandler struct{}
 
@@ -12,7 +17,13 @@ func (ph *productHandler) GetAll(ctx *gin.Context) {}
 
 func (ph *productHandler) GetOne(ctx *gin.Context) {}
 
-func (ph *productHandler) Create(ctx *gin.Context) {}
+func (ph *productHandler) Create(ctx *gin.Context) {
+	ps := services.GetProductService()
+
+	result := ps.Create(ctx)
+
+	helpers.SendResult(result, ctx)
+}
 
 func (ph *productHandler) Update(ctx *gin.Context) {}
 
