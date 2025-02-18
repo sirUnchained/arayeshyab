@@ -7,7 +7,7 @@ type Product struct {
 	Title         string `gorm:"type:varchar(250);"`
 	Slug          string `gorm:"type:varchar(250);unique"`
 	Description   string `gorm:"type:varchar(500)"`
-	Cover         string `gorm:"type:varchar(250)"`
+	Pic           string `gorm:"type:varchar(250)"`
 	Count         uint
 	Price         uint
 	BrandID       uint `gorm:"index"`

@@ -125,7 +125,6 @@ func (ch *categoryService) CreateCategory(ctx *gin.Context) *helpers.Result {
 	// create unique name for file
 	fileName := fmt.Sprintf("%s-%d-%s", time.Now().Format("202503032460"), rand.Intn(10e10), cover.Filename)
 	cover.Filename = fileName
-	new_category.Pic = fileName
 
 	// save file
 	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/categories/%s", fileName))
@@ -133,6 +132,7 @@ func (ch *categoryService) CreateCategory(ctx *gin.Context) *helpers.Result {
 		fmt.Println(err)
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و به زوذی رفع خواهد شد", Data: nil}
 	}
+	new_category.Pic = fmt.Sprintf("/public/categories/%s", fileName)
 
 	// save datas to db
 	err = db.Model(&schemas.Category{}).Create(new_category).Error

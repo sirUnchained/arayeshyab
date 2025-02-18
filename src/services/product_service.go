@@ -1,10 +1,14 @@
 package services
 
 import (
-	"arayeshyab/src/apis/dto"
 	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/databases/mysql_db"
+	"arayeshyab/src/databases/schemas"
+	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,46 +24,83 @@ func GetProductService() *productService {
 // func (ph *productService) GetOne(ctx *gin.Context) *helpers.Result {}
 
 func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
-	// db := mysql_db.GetDB()
-	// cover, err := ctx.FormFile("cover")
-	// if err != nil {
-	// 	return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
-	// }
-
-	var recived_product dto.CreateProductDTO
-	var new_product dto.CreateProductDTO
-
 	title := ctx.PostForm("title")
-	recived_product.Title = title
-	slug := strings.Replace(title, " ", "-", -1)
-	recived_product.Slug = slug
-	description := ctx.PostForm("description")
-	recived_product.Description = description
-	count := ctx.PostForm("count")
-	count_int, _ := strconv.Atoi(count)
-	recived_product.Count = count_int
-	price := ctx.PostForm("price")
-	price_int, _ := strconv.Atoi(price)
-	recived_product.Price = price_int
-	brandID := ctx.PostForm("brand_id")
-	brandID_int, _ := strconv.Atoi(brandID)
-	recived_product.BrandID = brandID_int
-	SubCategoryID := ctx.PostForm("sub_category_id")
-	SubCategoryID_int, _ := strconv.Atoi(SubCategoryID)
-	recived_product.SubCategoryID = SubCategoryID_int
-
-	err := ctx.(&recived_product, &new_product)
-	if err != nil {
-		return &helpers.Result{Ok: false, Status: 400, Message: err.Error(), Data: nil}
+	if title == "" || len(title) > 250 {
+		fmt.Println(title)
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان الزامی بوده و باید کمتر از ۲۵۰ حرف باشد", Data: nil}
 	}
 
-	// check_slug_exist := new(schemas.Product)
-	// db.Model(check_slug_exist).Where("slug = ?", slug).First(check_slug_exist)
-	// if check_slug_exist.ID != 0 {
-	// 	return &helpers.Result{Ok: false, Status: 400, Message: "عنوان از قبل وجود دارد لطفا یکی دیگر انتخاب کنید", Data: nil}
-	// }
+	slug := strings.Replace(title, " ", "-", -1)
+	db := mysql_db.GetDB()
+	check_slug_exist := new(schemas.Product)
+	db.Model(check_slug_exist).Where("slug = ?", slug).First(check_slug_exist)
+	if check_slug_exist.ID != 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان از قبل وجود دارد لطفا یکی دیگر انتخاب کنید", Data: nil}
+	}
 
-	return &helpers.Result{Ok: true, Status: 201, Message: "محصول ایجاد گردید", Data: recived_product}
+	description := ctx.PostForm("description")
+	if description == "" || len(description) > 500 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "توضیحات الزامی بوده و باید کمتر از ۵۰۰ حرف باشد", Data: nil}
+	}
+
+	count := ctx.PostForm("count")
+	count_int, err := strconv.Atoi(count)
+	if err != nil || count_int < 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ورودی تعداد معتبر نیست", Data: nil}
+	}
+
+	price := ctx.PostForm("price")
+	price_int, err := strconv.Atoi(price)
+	if err != nil || price_int < 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ورودی مبلغ معتبر نیست", Data: nil}
+	}
+
+	brandID := ctx.PostForm("brand_id")
+	brandID_int, err := strconv.Atoi(brandID)
+	if err != nil || brandID_int <= 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی برند معتبر نیست", Data: nil}
+	}
+
+	SubCategoryID := ctx.PostForm("sub_category_id")
+	SubCategoryID_int, err := strconv.Atoi(SubCategoryID)
+	if err != nil || SubCategoryID_int <= 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی زیر دسته بندی معتبر نیست", Data: nil}
+	}
+
+	check_sub_cat := new(schemas.SubCategory)
+	db.Model(check_sub_cat).Where("id = ?", SubCategoryID).First(check_sub_cat)
+	if check_sub_cat.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی زیر دسته بندی یافت نشد", Data: nil}
+	}
+
+	cover, err := ctx.FormFile("cover")
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
+	}
+
+	filename := fmt.Sprintf("%s-%d-%s", time.Now().Format("2020122921093"), rand.Intn(10e10), cover.Filename)
+
+	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/%s/%s", check_sub_cat.Slug, filename))
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	new_product := new(schemas.Product)
+	new_product.Slug = slug
+	new_product.Title = title
+	new_product.Description = description
+	new_product.Pic = fmt.Sprintf("/public/%s/%s", check_sub_cat.Slug, filename)
+	new_product.Count = uint(count_int)
+	new_product.Price = uint(price_int)
+	new_product.SubCategoryID = uint(SubCategoryID_int)
+	new_product.BrandID = uint(brandID_int)
+
+	err = db.Create(new_product).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 201, Message: "محصول ایجاد گردید", Data: new_product}
 
 }
 
