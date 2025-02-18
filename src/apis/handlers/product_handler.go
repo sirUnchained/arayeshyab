@@ -15,7 +15,13 @@ func GetProductHandler() *productHandler {
 
 func (ph *productHandler) GetAll(ctx *gin.Context) {}
 
-func (ph *productHandler) GetOne(ctx *gin.Context) {}
+func (ph *productHandler) GetOne(ctx *gin.Context) {
+	ps := services.GetProductService()
+
+	result := ps.GetOne(ctx)
+
+	helpers.SendResult(result, ctx)
+}
 
 func (ph *productHandler) Create(ctx *gin.Context) {
 	ps := services.GetProductService()

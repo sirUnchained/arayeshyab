@@ -19,9 +19,28 @@ func GetProductService() *productService {
 	return &productService{}
 }
 
-// func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {}
 
-// func (ph *productService) GetOne(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) GetOne(ctx *gin.Context) *helpers.Result {
+	id_str := ctx.Param("id")
+	var id int
+	var err error
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی محصول معتبر نیست"}
+	}
+
+	result := new(schemas.Product)
+	db := mysql_db.GetDB()
+	err = db.Model(result).Where("id = ?", id).Preload("Brand").Preload("SubCategory").First(result).Error
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return &helpers.Result{Ok: false, Status: 404, Message: "محصول پیدا نشد", Data: nil}
+		}
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 201, Message: "محصول ایجاد گردید", Data: result}
+}
 
 func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
 	title := ctx.PostForm("title")
@@ -100,10 +119,10 @@ func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
 	}
 
-	return &helpers.Result{Ok: true, Status: 201, Message: "محصول ایجاد گردید", Data: new_product}
+	return &helpers.Result{Ok: true, Status: 201, Message: "بفرمایید", Data: new_product}
 
 }
 
-// func (ph *productService) Update(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) Update(ctx *gin.Context) *helpers.Result {}
 
-// func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}
