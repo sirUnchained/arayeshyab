@@ -287,8 +287,28 @@ func (ph *productService) Update(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
 	}
 
-	return &helpers.Result{Ok: true, Status: 201, Message: "بروز رسانی با موفقیت انجام شد", Data: updating_product}
+	return &helpers.Result{Ok: true, Status: 200, Message: "بروز رسانی با موفقیت انجام شد", Data: updating_product}
 
 }
 
-// func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {
+	productID_str := ctx.Param("id")
+	id, err := strconv.Atoi(productID_str)
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "محصولی با ای دی مورد نظر یافت نشد", Data: nil}
+	}
+
+	removing_product := new(schemas.Product)
+	db := mysql_db.GetDB()
+	db.Model(removing_product).Where("id = ?", id).First(removing_product)
+	if removing_product.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "محصولی با ای دی مورد نظر یافت نشد", Data: nil}
+	}
+
+	err = db.Delete(removing_product).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "عملیات حذف با موفقیت انجام شد", Data: removing_product}
+}
