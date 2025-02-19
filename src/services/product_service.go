@@ -19,7 +19,66 @@ func GetProductService() *productService {
 	return &productService{}
 }
 
-func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
+	query_str := "price > 0 "
+
+	brandID_str := ctx.Query("brand-id")
+	SubCategoryID_str := ctx.Query("sub-category-id")
+
+	newest := ctx.Query("newest")
+	reachest := ctx.Query("reachest")
+
+	limit_str := ctx.Query("limit")
+	page_str := ctx.Query("page")
+
+	if id, err := strconv.Atoi(brandID_str); err == nil {
+		query_str += fmt.Sprintf("AND brand_id = %d ", id)
+	}
+	if id, err := strconv.Atoi(SubCategoryID_str); err == nil {
+		query_str += fmt.Sprintf("AND sub_category_id = %d ", id)
+	}
+
+	if isNewest, err := strconv.Atoi(newest); err == nil {
+		if isNewest == 0 {
+			query_str += "ORDER BY created_at asc "
+		} else {
+			query_str += "ORDER BY created_at desc "
+		}
+	} else if isReachest, err := strconv.Atoi(reachest); err == nil {
+		if isReachest == 0 {
+			query_str += "ORDER BY price asc "
+		} else {
+			query_str += "ORDER BY price desc "
+		}
+	}
+
+	var page, limit int
+	page, err := strconv.Atoi(page_str)
+	if err != nil {
+		page = 1
+	}
+	limit, err = strconv.Atoi(limit_str)
+	if err != nil {
+		limit = 10
+	}
+
+	products := new([]schemas.Product)
+	db := mysql_db.GetDB()
+	err = db.
+		Model(&schemas.Product{}).
+		Where(query_str).
+		Limit(limit).
+		Offset((page-1)*limit).
+		Select("id", "title", "slug", "pic", "count", "price", "brand_id", "sub_category_id").
+		Find(products).Error
+	if err != nil {
+		fmt.Println(err)
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "بفرمایید", Data: products}
+
+}
 
 func (ph *productService) GetOne(ctx *gin.Context) *helpers.Result {
 	id_str := ctx.Param("id")
@@ -123,6 +182,6 @@ func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
 
 }
 
-func (ph *productService) Update(ctx *gin.Context) *helpers.Result {}
+// func (ph *productService) Update(ctx *gin.Context) *helpers.Result {}
 
-func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}
+// func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}

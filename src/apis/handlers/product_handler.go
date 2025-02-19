@@ -13,7 +13,13 @@ func GetProductHandler() *productHandler {
 	return &productHandler{}
 }
 
-func (ph *productHandler) GetAll(ctx *gin.Context) {}
+func (ph *productHandler) GetAll(ctx *gin.Context) {
+	ps := services.GetProductService()
+
+	result := ps.GetAll(ctx)
+
+	helpers.SendResult(result, ctx)
+}
 
 func (ph *productHandler) GetOne(ctx *gin.Context) {
 	ps := services.GetProductService()
