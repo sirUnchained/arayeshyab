@@ -274,6 +274,12 @@ func (ph *productService) Update(ctx *gin.Context) *helpers.Result {
 	if err != nil {
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
 	}
+
+	err = helpers.RemoveFile(updating_product.Pic)
+	if err != nil {
+		fmt.Println(err)
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
 	updating_product.Pic = fmt.Sprintf("/public/%s/%s", check_sub_cat.Slug, filename)
 
 	err = db.Save(updating_product).Error
