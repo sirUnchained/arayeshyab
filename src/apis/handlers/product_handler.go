@@ -37,6 +37,12 @@ func (ph *productHandler) Create(ctx *gin.Context) {
 	helpers.SendResult(result, ctx)
 }
 
-func (ph *productHandler) Update(ctx *gin.Context) {}
+func (ph *productHandler) Update(ctx *gin.Context) {
+	ps := services.GetProductService()
+
+	result := ps.Update(ctx)
+
+	helpers.SendResult(result, ctx)
+}
 
 func (ph *productHandler) Remove(ctx *gin.Context) {}

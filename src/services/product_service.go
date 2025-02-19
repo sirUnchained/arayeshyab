@@ -138,6 +138,11 @@ func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
 	if err != nil || brandID_int <= 0 {
 		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی برند معتبر نیست", Data: nil}
 	}
+	check_sub_brand := new(schemas.SubCategory)
+	db.Model(check_sub_brand).Where("id = ?", brandID).First(check_sub_brand)
+	if check_sub_brand.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی برند بندی یافت نشد", Data: nil}
+	}
 
 	SubCategoryID := ctx.PostForm("sub_category_id")
 	SubCategoryID_int, err := strconv.Atoi(SubCategoryID)
@@ -182,6 +187,102 @@ func (ph *productService) Create(ctx *gin.Context) *helpers.Result {
 
 }
 
-// func (ph *productService) Update(ctx *gin.Context) *helpers.Result {}
+func (ph *productService) Update(ctx *gin.Context) *helpers.Result {
+	productID_str := ctx.Param("id")
+	id, err := strconv.Atoi(productID_str)
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "محصولی با ای دی مورد نظر یافت نشد", Data: nil}
+	}
+
+	updating_product := new(schemas.Product)
+	db := mysql_db.GetDB()
+	db.Model(updating_product).Where("id = ?", id).First(updating_product)
+	if updating_product.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "محصولی با ای دی مورد نظر یافت نشد", Data: nil}
+	}
+
+	title := ctx.PostForm("title")
+	if title == "" || len(title) > 250 {
+		fmt.Println(title)
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان الزامی بوده و باید کمتر از ۲۵۰ حرف باشد", Data: nil}
+	}
+	updating_product.Title = title
+
+	slug := strings.Replace(title, " ", "-", -1)
+	check_slug_exist := new(schemas.Product)
+	db.Model(check_slug_exist).
+		Where("id != ?", updating_product.ID).
+		Where("slug = ?", slug).
+		First(check_slug_exist)
+	if check_slug_exist.ID != 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان از قبل وجود دارد لطفا یکی دیگر انتخاب کنید", Data: nil}
+	}
+	updating_product.Slug = slug
+
+	description := ctx.PostForm("description")
+	if description == "" || len(description) > 500 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "توضیحات الزامی بوده و باید کمتر از ۵۰۰ حرف باشد", Data: nil}
+	}
+	updating_product.Description = description
+
+	count := ctx.PostForm("count")
+	count_int, err := strconv.Atoi(count)
+	if err != nil || count_int < 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ورودی تعداد معتبر نیست", Data: nil}
+	}
+	updating_product.Count = uint(count_int)
+
+	price := ctx.PostForm("price")
+	price_int, err := strconv.Atoi(price)
+	if err != nil || price_int < 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ورودی مبلغ معتبر نیست", Data: nil}
+	}
+	updating_product.Price = uint(price_int)
+
+	brandID := ctx.PostForm("brand_id")
+	brandID_int, err := strconv.Atoi(brandID)
+	if err != nil || brandID_int <= 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی برند معتبر نیست", Data: nil}
+	}
+	check_sub_brand := new(schemas.SubCategory)
+	db.Model(check_sub_brand).Where("id = ?", brandID).First(check_sub_brand)
+	if check_sub_brand.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی برند بندی یافت نشد", Data: nil}
+	}
+	updating_product.BrandID = uint(brandID_int)
+
+	SubCategoryID := ctx.PostForm("sub_category_id")
+	SubCategoryID_int, err := strconv.Atoi(SubCategoryID)
+	if err != nil || SubCategoryID_int <= 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی زیر دسته بندی معتبر نیست", Data: nil}
+	}
+	check_sub_cat := new(schemas.SubCategory)
+	db.Model(check_sub_cat).Where("id = ?", SubCategoryID).First(check_sub_cat)
+	if check_sub_cat.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 400, Message: "ای دی زیر دسته بندی یافت نشد", Data: nil}
+	}
+	updating_product.SubCategoryID = uint(SubCategoryID_int)
+
+	cover, err := ctx.FormFile("cover")
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
+	}
+
+	filename := fmt.Sprintf("%s-%d-%s", time.Now().Format("2020122921093"), rand.Intn(10e10), cover.Filename)
+
+	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/%s/%s", check_sub_cat.Slug, filename))
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+	updating_product.Pic = fmt.Sprintf("/public/%s/%s", check_sub_cat.Slug, filename)
+
+	err = db.Save(updating_product).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 201, Message: "بروز رسانی با موفقیت انجام شد", Data: updating_product}
+
+}
 
 // func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {}
