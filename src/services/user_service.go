@@ -116,5 +116,4 @@ func (us *userService) Ban(ctx *gin.Context) *helpers.Result {
 	}
 
 	return &helpers.Result{Ok: true, Status: 200, Message: "کاربر اخراج شد", Data: nil}
-
 }
