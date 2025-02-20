@@ -267,7 +267,14 @@ func (ph *productService) Update(ctx *gin.Context) *helpers.Result {
 	if err != nil {
 		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
 	}
-
+	// make sure cover foramt is jpg
+	if !strings.Contains(cover.Filename, "jpg") {
+		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت فایل فقطط باید jpg باشد", Data: nil}
+	}
+	// make sure cover size is 2mb
+	if cover.Size > (2 << 20) {
+		return &helpers.Result{Ok: false, Status: 400, Message: "اندازه تصویر وارد شده بیش از ۲ مگابایت است", Data: nil}
+	}
 	filename := fmt.Sprintf("%s-%d-%s", time.Now().Format("2020122921093"), rand.Intn(10e10), cover.Filename)
 
 	err = ctx.SaveUploadedFile(cover, fmt.Sprintf("./public/%s/%s", check_sub_cat.Slug, filename))
