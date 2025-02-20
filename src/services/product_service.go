@@ -305,6 +305,12 @@ func (ph *productService) Remove(ctx *gin.Context) *helpers.Result {
 		return &helpers.Result{Ok: false, Status: 404, Message: "محصولی با ای دی مورد نظر یافت نشد", Data: nil}
 	}
 
+	err = helpers.RemoveFile(removing_product.Pic)
+	if err != nil {
+		fmt.Println(err)
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}
+	}
+
 	err = db.Delete(removing_product).Error
 	if err != nil {
 		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی پیش امده و بزودی رفع خواهد شد", Data: nil}

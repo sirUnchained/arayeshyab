@@ -21,8 +21,11 @@ func StartServer(cfg *configs.Configs) {
 }
 
 func initRoutes(r *gin.RouterGroup) {
-	routes.AuthRoutes(r)
-	routes.UsersRoutes(r)
-	routes.CategoryRoutes(r)
-	routes.ProductRoutes(r)
+	route_group := r.Group("/v1")
+
+	routes.AuthRoutes(route_group)
+	routes.UsersRoutes(route_group)
+	routes.CategoryRoutes(route_group)
+	routes.ProductRoutes(route_group)
+	routes.BrandRoutes(route_group)
 }
