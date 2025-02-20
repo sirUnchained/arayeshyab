@@ -24,7 +24,7 @@ func (bh *brandHandler) GetAll(ctx *gin.Context) {
 func (bh *brandHandler) Create(ctx *gin.Context) {
 	bs := services.GetBrandService()
 
-	result := bs.GetAll(ctx)
+	result := bs.Create(ctx)
 
 	helpers.SendResult(result, ctx)
 }
@@ -32,7 +32,7 @@ func (bh *brandHandler) Create(ctx *gin.Context) {
 func (bh *brandHandler) Remove(ctx *gin.Context) {
 	bs := services.GetBrandService()
 
-	result := bs.GetAll(ctx)
+	result := bs.Remove(ctx)
 
 	helpers.SendResult(result, ctx)
 }

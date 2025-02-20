@@ -49,7 +49,7 @@ func (bh *brandService) Create(ctx *gin.Context) *helpers.Result {
 	// get and validate title
 	title := ctx.PostForm("title")
 	if title == "" || len(title) > 50 {
-		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان دسته بندی الزلمی است و باید حداکثر ۵۰ حرف باشد", Data: nil}
+		return &helpers.Result{Ok: false, Status: 400, Message: "عنوان برند الزلمی است و باید حداکثر ۵۰ حرف باشد", Data: nil}
 	}
 	new_brand.Title = title
 
@@ -67,11 +67,11 @@ func (bh *brandService) Create(ctx *gin.Context) *helpers.Result {
 	// ** logo
 	logo, err := ctx.FormFile("logo")
 	if err != nil {
-		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
+		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای برند الزامی است", Data: nil}
 	}
 	// make sure logo foramt is jpg
 	if !strings.Contains(logo.Filename, "jpg") {
-		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت فایل فقطط باید jpg باشد", Data: nil}
+		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت لوگو فقط باید jpg باشد", Data: nil}
 	}
 	// make sure logo size is 2mb
 	if logo.Size > (2 << 20) {
@@ -83,11 +83,11 @@ func (bh *brandService) Create(ctx *gin.Context) *helpers.Result {
 	// ** clip
 	clip, err := ctx.FormFile("clip")
 	if err != nil {
-		return &helpers.Result{Ok: false, Status: 400, Message: "یک تصویر برای محصول الزامی است", Data: nil}
+		return &helpers.Result{Ok: false, Status: 400, Message: "یک کلیپ برای برند الزامی است", Data: nil}
 	}
 	// make sure clip foramt is jpg
-	if !strings.Contains(clip.Filename, "jpg") {
-		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت فایل فقطط باید jpg باشد", Data: nil}
+	if !strings.Contains(clip.Filename, "mp4") {
+		return &helpers.Result{Ok: false, Status: 400, Message: "فرمت کلیپ فقط باید mp4 باشد", Data: nil}
 	}
 	// make sure clip size is 10mb
 	if clip.Size > (10 << 20) {

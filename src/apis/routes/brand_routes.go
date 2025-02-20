@@ -1,9 +1,16 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"arayeshyab/src/apis/handlers"
+	"arayeshyab/src/apis/middleware"
+
+	"github.com/gin-gonic/gin"
+)
 
 func BrandRoutes(r *gin.RouterGroup) {
-	r.GET("/brand")
-	r.POST("/brand")
-	r.DELETE("/brand/:id")
+	bh := handlers.GetBrandHandler()
+
+	r.GET("/brand", bh.GetAll)
+	r.POST("/brand", middleware.Authorize(), middleware.RoleProtect(), bh.Create)
+	r.DELETE("/brand/:id", middleware.Authorize(), middleware.RoleProtect(), bh.Remove)
 }
