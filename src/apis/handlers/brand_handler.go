@@ -1,13 +1,38 @@
 package handlers
 
+import (
+	"arayeshyab/src/apis/helpers"
+	"arayeshyab/src/services"
+
+	"github.com/gin-gonic/gin"
+)
+
 type brandHandler struct{}
 
-func (bh *brandHandler) GetBrandHandler() *brandHandler {
+func GetBrandHandler() *brandHandler {
 	return &brandHandler{}
 }
 
-func (bh *brandHandler) GetAll() {}
+func (bh *brandHandler) GetAll(ctx *gin.Context) {
+	bs := services.GetBrandService()
 
-func (bh *brandHandler) Create() {}
+	result := bs.GetAll(ctx)
 
-func (bh *brandHandler) Remove() {}
+	helpers.SendResult(result, ctx)
+}
+
+func (bh *brandHandler) Create(ctx *gin.Context) {
+	bs := services.GetBrandService()
+
+	result := bs.GetAll(ctx)
+
+	helpers.SendResult(result, ctx)
+}
+
+func (bh *brandHandler) Remove(ctx *gin.Context) {
+	bs := services.GetBrandService()
+
+	result := bs.GetAll(ctx)
+
+	helpers.SendResult(result, ctx)
+}
