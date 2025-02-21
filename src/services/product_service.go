@@ -22,7 +22,8 @@ func GetProductService() *productService {
 // todo some errors are in GetAll service, fix it !
 func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	db := mysql_db.GetDB()
-	query := db.Model(&schemas.Product{})
+	query := db.Model(&schemas.Product{}).
+		Select([]string{"title", "slug", "pic", "count", "price", "id", "off_id"})
 
 	brandID_str := ctx.Query("brand-id")
 	SubCategoryID_str := ctx.Query("sub-category-id")
@@ -69,7 +70,6 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 
 	products := new([]schemas.Product)
 	err = query.
-		// Select("title", "slug", "pic", "count", "price", "Off").
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Preload("Off").
