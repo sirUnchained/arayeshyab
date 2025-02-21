@@ -19,7 +19,6 @@ func GetProductService() *productService {
 	return &productService{}
 }
 
-// todo some errors are in GetAll service, fix it !
 func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	db := mysql_db.GetDB()
 	query := db.Model(&schemas.Product{}).
@@ -35,12 +34,10 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	page_str := ctx.Query("page")
 
 	if id, err := strconv.Atoi(brandID_str); err == nil {
-		// query.Where("brand_id = ?", id)
 		query.Where(fmt.Sprintf("brand_id = %d", id))
 
 	}
 	if id, err := strconv.Atoi(SubCategoryID_str); err == nil {
-		// query.Where("sub_category_id = ?", id)
 		query.Where(fmt.Sprintf("sub_category_id = %d", id))
 	}
 
