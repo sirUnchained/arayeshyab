@@ -46,9 +46,9 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 		}
 	} else if isReachest, err := strconv.Atoi(reachest); err == nil {
 		if isReachest == 0 {
-			query_str += "ORDER BY price asc "
+			query_str += "ORDER BY price asc"
 		} else {
-			query_str += "ORDER BY price desc "
+			query_str += "ORDER BY price desc"
 		}
 	}
 
@@ -69,7 +69,8 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 		Where(query_str).
 		Limit(limit).
 		Offset((page-1)*limit).
-		Select("id", "title", "slug", "pic", "count", "price", "brand_id", "sub_category_id").
+		Select("title", "slug", "pic", "count", "price", "Off").
+		Preload("Off").
 		Find(products).Error
 	if err != nil {
 		fmt.Println(err)
@@ -90,7 +91,12 @@ func (ph *productService) GetOne(ctx *gin.Context) *helpers.Result {
 
 	result := new(schemas.Product)
 	db := mysql_db.GetDB()
-	err = db.Model(result).Where("id = ?", id).Preload("Brand").Preload("SubCategory").First(result).Error
+	err = db.Model(result).
+		Where("id = ?", id).
+		Preload("Brand").
+		Preload("Off").
+		Preload("SubCategory").
+		First(result).Error
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return &helpers.Result{Ok: false, Status: 404, Message: "محصول پیدا نشد", Data: nil}

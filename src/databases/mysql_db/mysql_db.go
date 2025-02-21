@@ -37,6 +37,8 @@ func InitMysql(cfg *configs.Configs) {
 		&schemas.User{},
 		&schemas.Category{},
 		&schemas.SubCategory{},
+		&schemas.Off{},
 		&schemas.Product{},
-		&schemas.Brand{})
+		&schemas.Brand{},
+	)
 }

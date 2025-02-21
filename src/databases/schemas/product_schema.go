@@ -10,6 +10,7 @@ type Product struct {
 	Pic           string `gorm:"type:varchar(250)"`
 	Count         uint
 	Price         uint
+	OffID         uint `gorm:"index"`
 	Off           Off
 	BrandID       uint `gorm:"index"`
 	Brand         Brand
