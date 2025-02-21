@@ -21,37 +21,41 @@ func GetProductService() *productService {
 
 // todo some errors are in GetAll service, fix it !
 func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
-	query_str := "price > 0 "
+	db := mysql_db.GetDB()
+	query := db.Model(&schemas.Product{})
 
 	brandID_str := ctx.Query("brand-id")
 	SubCategoryID_str := ctx.Query("sub-category-id")
 
-	// newest := ctx.Query("newest")
-	// reachest := ctx.Query("reachest")
+	newest := ctx.Query("newest")
+	reachest := ctx.Query("reachest")
 
 	limit_str := ctx.Query("limit")
 	page_str := ctx.Query("page")
 
 	if id, err := strconv.Atoi(brandID_str); err == nil {
-		query_str += fmt.Sprintf("AND brand_id = %d ", id)
+		// query.Where("brand_id = ?", id)
+		query.Where(fmt.Sprintf("brand_id = %d", id))
+
 	}
 	if id, err := strconv.Atoi(SubCategoryID_str); err == nil {
-		query_str += fmt.Sprintf("AND sub_category_id = %d ", id)
+		// query.Where("sub_category_id = ?", id)
+		query.Where(fmt.Sprintf("sub_category_id = %d", id))
 	}
 
-	// if isNewest, err := strconv.Atoi(newest); err == nil {
-	// 	if isNewest == 0 {
-	// 		query_str += "ORDER BY created_at asc "
-	// 	} else {
-	// 		query_str += "ORDER BY created_at desc "
-	// 	}
-	// } else if isReachest, err := strconv.Atoi(reachest); err == nil {
-	// 	if isReachest == 0 {
-	// 		query_str += "ORDER BY price asc"
-	// 	} else {
-	// 		query_str += "ORDER BY price desc"
-	// 	}
-	// }
+	if isNewest, err := strconv.Atoi(newest); err == nil {
+		if isNewest == 0 {
+			query.Order("created_at asc")
+		} else {
+			query.Order("created_at desc")
+		}
+	} else if isReachest, err := strconv.Atoi(reachest); err == nil {
+		if isReachest == 0 {
+			query.Order("price asc")
+		} else {
+			query.Order("price desc")
+		}
+	}
 
 	var page, limit int
 	page, err := strconv.Atoi(page_str)
@@ -64,13 +68,10 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	}
 
 	products := new([]schemas.Product)
-	db := mysql_db.GetDB()
-	err = db.
-		Model(&schemas.Product{}).
+	err = query.
+		// Select("title", "slug", "pic", "count", "price", "Off").
 		Limit(limit).
-		Offset((page-1)*limit).
-		Select("title", "slug", "pic", "count", "price", "Off").
-		Where(query_str).
+		Offset((page - 1) * limit).
 		Preload("Off").
 		Find(products).Error
 	if err != nil {
