@@ -19,14 +19,15 @@ func GetProductService() *productService {
 	return &productService{}
 }
 
+// todo some errors are in GetAll service, fix it !
 func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	query_str := "price > 0 "
 
 	brandID_str := ctx.Query("brand-id")
 	SubCategoryID_str := ctx.Query("sub-category-id")
 
-	newest := ctx.Query("newest")
-	reachest := ctx.Query("reachest")
+	// newest := ctx.Query("newest")
+	// reachest := ctx.Query("reachest")
 
 	limit_str := ctx.Query("limit")
 	page_str := ctx.Query("page")
@@ -38,19 +39,19 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 		query_str += fmt.Sprintf("AND sub_category_id = %d ", id)
 	}
 
-	if isNewest, err := strconv.Atoi(newest); err == nil {
-		if isNewest == 0 {
-			query_str += "ORDER BY created_at asc "
-		} else {
-			query_str += "ORDER BY created_at desc "
-		}
-	} else if isReachest, err := strconv.Atoi(reachest); err == nil {
-		if isReachest == 0 {
-			query_str += "ORDER BY price asc"
-		} else {
-			query_str += "ORDER BY price desc"
-		}
-	}
+	// if isNewest, err := strconv.Atoi(newest); err == nil {
+	// 	if isNewest == 0 {
+	// 		query_str += "ORDER BY created_at asc "
+	// 	} else {
+	// 		query_str += "ORDER BY created_at desc "
+	// 	}
+	// } else if isReachest, err := strconv.Atoi(reachest); err == nil {
+	// 	if isReachest == 0 {
+	// 		query_str += "ORDER BY price asc"
+	// 	} else {
+	// 		query_str += "ORDER BY price desc"
+	// 	}
+	// }
 
 	var page, limit int
 	page, err := strconv.Atoi(page_str)
@@ -66,10 +67,10 @@ func (ph *productService) GetAll(ctx *gin.Context) *helpers.Result {
 	db := mysql_db.GetDB()
 	err = db.
 		Model(&schemas.Product{}).
-		Where(query_str).
 		Limit(limit).
 		Offset((page-1)*limit).
 		Select("title", "slug", "pic", "count", "price", "Off").
+		Where(query_str).
 		Preload("Off").
 		Find(products).Error
 	if err != nil {
