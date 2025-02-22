@@ -12,5 +12,5 @@ func OffRoutes(r *gin.RouterGroup) {
 
 	r.GET("/off", middleware.Authorize(), middleware.RoleProtect(), oh.GetAll)
 	r.POST("/off", middleware.Authorize(), middleware.RoleProtect(), oh.Create)
-	r.DELETE("/off", middleware.Authorize(), middleware.RoleProtect(), oh.Remove)
+	r.DELETE("/off/:id", middleware.Authorize(), middleware.RoleProtect(), oh.Remove)
 }
