@@ -1,11 +1,13 @@
 package dto
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 )
 
+// todo we have some problem with validate time i have to fix it
 type CreateOffDto struct {
 	Amount    uint      `json:"amount" binding:"required,numeric,min=0,max=100"`
 	Code      string    `json:"code" binding:"required,len=16"`
@@ -16,6 +18,8 @@ func CreateOffDto_validate(err error) []string {
 	if err.Error() == "EOF" {
 		return nil
 	}
+
+	fmt.Printf("%+v\n", err)
 
 	errMsg := []string{}
 
