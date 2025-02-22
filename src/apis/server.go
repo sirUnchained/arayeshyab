@@ -15,12 +15,12 @@ func StartServer(cfg *configs.Configs) {
 
 	server.Static("/public", "./public")
 
-	initRoutes(&server.RouterGroup)
+	initRoutesV1(&server.RouterGroup)
 
 	server.Run(fmt.Sprintf(":%s", cfg.Server.Port))
 }
 
-func initRoutes(r *gin.RouterGroup) {
+func initRoutesV1(r *gin.RouterGroup) {
 	route_group := r.Group("/v1")
 
 	routes.AuthRoutes(route_group)
@@ -28,4 +28,5 @@ func initRoutes(r *gin.RouterGroup) {
 	routes.CategoryRoutes(route_group)
 	routes.ProductRoutes(route_group)
 	routes.BrandRoutes(route_group)
+	routes.OffRoutes(route_group)
 }
