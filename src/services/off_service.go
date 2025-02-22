@@ -14,6 +14,8 @@ func GetOffService() *offService {
 
 func (oh *offService) GetAll() *helpers.Result {}
 
-func (oh *offService) Create(ctx *gin.Context) *helpers.Result {}
+func (oh *offService) Create(ctx *gin.Context) *helpers.Result {
+
+}
 
 func (oh *offService) Remove(ctx *gin.Context) *helpers.Result {}
