@@ -5,7 +5,6 @@ import (
 	"arayeshyab/src/apis/helpers"
 	"arayeshyab/src/databases/mysql_db"
 	"arayeshyab/src/databases/schemas"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,10 +25,6 @@ func (oh *offService) Create(ctx *gin.Context) *helpers.Result {
 	if err := ctx.ShouldBindBodyWithJSON(&new_off_dto); err != nil {
 		errs := dto.CreateOffDto_validate(err)
 		return &helpers.Result{Ok: false, Status: 400, Message: "لطفا ورودی ها را بررسی و مجدد وارد کنید", Data: errs}
-	}
-
-	if new_off_dto.ExpiresAt.Unix() <= time.Now().Unix() {
-		return &helpers.Result{Ok: false, Status: 400, Message: "زمان وارد شده معتبر نیست", Data: nil}
 	}
 
 	new_off := new(schemas.Off)
