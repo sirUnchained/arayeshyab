@@ -18,7 +18,12 @@ func GetOffService() *offService {
 }
 
 func (oh *offService) GetAll() *helpers.Result {
-	return &helpers.Result{Ok: true, Status: 201, Message: "بفرماییذ", Data: nil}
+	offs := new([]schemas.Off)
+	db := mysql_db.GetDB()
+
+	db.Model(&schemas.Off{}).Find(offs)
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "بفرماییذ", Data: offs}
 }
 
 func (oh *offService) Create(ctx *gin.Context) *helpers.Result {
