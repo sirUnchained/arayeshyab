@@ -5,6 +5,7 @@ import (
 	"arayeshyab/src/apis/helpers"
 	"arayeshyab/src/databases/mysql_db"
 	"arayeshyab/src/databases/schemas"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -45,5 +46,26 @@ func (oh *offService) Create(ctx *gin.Context) *helpers.Result {
 }
 
 func (oh *offService) Remove(ctx *gin.Context) *helpers.Result {
-	return &helpers.Result{Ok: true, Status: 201, Message: "تخفیف حذف شد", Data: nil}
+	off_id_str := ctx.Param("id")
+	var id int
+	var err error
+
+	if id, err = strconv.Atoi(off_id_str); err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "تخفیف یافت نشد", Data: nil}
+	}
+
+	remove_off := new(schemas.Off)
+	db := mysql_db.GetDB()
+
+	db.Model(remove_off).Where("id = ?", id).First(remove_off)
+	if remove_off.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "تخفیف یافت نشد", Data: nil}
+	}
+
+	err = db.Delete(remove_off).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی از سمت ما پیش امده و بزودی حل خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "تخفیف حذف شد", Data: nil}
 }
