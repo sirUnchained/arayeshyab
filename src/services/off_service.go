@@ -26,6 +26,30 @@ func (oh *offService) GetAll() *helpers.Result {
 	return &helpers.Result{Ok: true, Status: 200, Message: "بفرماییذ", Data: offs}
 }
 
+func (oh *offService) Campain(ctx *gin.Context) *helpers.Result {
+	id_str := ctx.Param("id")
+	var id int
+	var err error
+
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "کد تخفیف پیدا نشد", Data: nil}
+	}
+
+	db := mysql_db.GetDB()
+	check_off := new(schemas.Off)
+	db.Model(check_off).Where("id = ?", id).First(check_off)
+	if check_off.ID == 0 {
+		return &helpers.Result{Ok: false, Status: 404, Message: "کد تخفیف پیدا نشد", Data: nil}
+	}
+
+	err = db.Model(&schemas.Product{}).Update("off_id", id).Error
+	if err != nil {
+		return &helpers.Result{Ok: false, Status: 500, Message: "مشکلی از سمت ما پیش امده و بزودی حل خواهد شد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "کمپین ایجاد شد!", Data: nil}
+}
+
 func (oh *offService) Create(ctx *gin.Context) *helpers.Result {
 	var new_off_dto dto.CreateOffDto
 
