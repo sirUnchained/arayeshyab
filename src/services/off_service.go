@@ -26,6 +26,17 @@ func (oh *offService) GetAll() *helpers.Result {
 	return &helpers.Result{Ok: true, Status: 200, Message: "بفرماییذ", Data: offs}
 }
 
+func (oh *offService) SetOff(ctx *gin.Context) *helpers.Result {
+	id_str := ctx.Param("id")
+	var id int
+	var err error
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.Result{Ok: false, Status: 404, Message: "کد تخفیف پیدا نشد", Data: nil}
+	}
+
+	return &helpers.Result{Ok: true, Status: 200, Message: "تخفیف ایجاد شد", Data: nil}
+}
+
 func (oh *offService) Campain(ctx *gin.Context) *helpers.Result {
 	id_str := ctx.Param("id")
 	var id int
